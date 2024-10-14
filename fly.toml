@@ -1,70 +1,42 @@
-##
-# FLY SETTINGS - onetime redis (2024-04-29)
+# fly.toml app configuration file generated for pricething-redis on 2024-10-14T18:31:44+02:00
 #
-# CONNECTIONS
-#
-# All Fly Apps within an organization are connected on the
-# private 6PN network and available to each other as
-# `APPNAME.internal`. For redis, connect to:
-#
-#   redis://:redispass@ots-staging-redis.internal:6379
-#
-# Note: the leading colon before the password is important
-# and without it redis will throw a NOAUTH exception. It's
-# the basic auth separator between username:password.
-#
-#   e.g. redis://username:password@hostname:6379
-#
-# A blank username means the password will be authenticated
-# against the default redis-server password (i.e. REDIS_PASSWORD).
-# Without the colon, the single password value is assumed
-# to be the username.
-#
-#
-# SETUP
-#
-# Run this once to create and prepare the Fly App for
-# deployment:
-#
-#   $ fly apps create ots-staging-redis --org onetime
-#   $ read -s redispass
-#   $ fly secrets set REDIS_PASSWORD=$redispass
-#   $ fly volumes create redis_staging
-#   $ fly deploy
-#
-# After that, run deploy any time this fly.toml config
-# or the docker image is updated.
-#
-#   $ fly deploy
-#
-#
-# COMMANDS:
-#
-#   $ fly machine list
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = "pricething-redis"
+app = 'pricething-redis'
+primary_region = 'arn'
 
-# fly volumes fork vol_v8me5jq3ojnm9g7r -r ams
-# fly scale count 0 --region sea
-# fly scale count 1 -- region ams
-primary_region = 'arn' # fly platform regions
+[build]
 
+[[mounts]]
+  source = 'redis_server'
+  destination = '/data'
 
-[mounts]
-destination = "/data"
-source = "redis_server"
+[http_service]
+  internal_port = 6379
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ['app']
 
-[metrics]
-port = 9091
-path = "/metrics"
+[[services]]
+  protocol = 'tcp'
+  internal_port = 6379
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 0
 
-# Use the Docker image instead of building from source
+  [[services.ports]]
+    port = 10000
 
-#[build]
-#image = "flyio/redis:6.2.6"
+  [[services.tcp_checks]]
+    interval = '10s'
+    timeout = '2s'
 
-[vm]
-size = "shared-cpu-1x"
-memory = "256mb"
-cpus = 1
+[[vm]]
+  size = 'shared-cpu-1x'
+
+[[metrics]]
+  port = 9091
+  path = '/metrics'
