@@ -1,4 +1,4 @@
-# fly.toml app configuration file generated for pricething-redis on 2024-10-20T19:24:22+02:00
+# fly.toml app configuration file generated for vernissage-redis on 2024-10-16T08:04:28+02:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
@@ -7,15 +7,19 @@ app = 'pricething-redis'
 primary_region = 'arn'
 
 [build]
+image = 'redis/redis-stack-server:latest'
 
-[[mounts]]
-source = 'redis_server'
-destination = '/data'
+[mounts]
+destination = "/data"
+source = "redis_server"
 
+[metrics]
+port = 9091
+path = "/metrics"
 
 [[services]]
-protocol = 'tcp'
 internal_port = 6379
+protocol = "tcp"
 auto_stop_machines = 'stop'
 auto_start_machines = true
 min_machines_running = 1
@@ -23,8 +27,6 @@ min_machines_running = 1
 port = 6379
 
 [[vm]]
-size = 'shared-cpu-1x'
-
-[[metrics]]
-port = 9091
-path = '/metrics'
+memory = '1gb'
+cpu_kind = 'shared'
+cpus = 2
